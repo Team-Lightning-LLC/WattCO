@@ -8,41 +8,69 @@
 </head>
 <body>
   <header class="header">
-    <h1>Spec-to-BOM</h1><span class="sub">By Doculabs</span>
+    <h1>Spec-to-BOM</h1>
+    <span class="byline">By Doculabs</span>
   </header>
 
-  <main class="grid">
-    <section class="card span-2">
+  <main class="container">
+    <!-- Generator Section -->
+    <section class="panel generator">
       <h2>Generator</h2>
-      <div class="row">
-        <label class="drop">
-          <input id="specFiles" type="file" multiple />
-          <span>Drop specs or click to upload</span>
-        </label>
-        <button id="startBtn">Start</button>
+      
+      <div class="upload-section">
+        <div class="file-drop" id="specDrop">
+          <input type="file" id="specFiles" multiple accept=".pdf,.doc,.docx,.txt" />
+          <div class="drop-content">
+            <span class="drop-icon">📄</span>
+            <span class="drop-text">Drop specs or click to upload</span>
+          </div>
+        </div>
+        <button class="btn-primary" id="startBtn" disabled>Start</button>
       </div>
-      <h3>Equipment Catalogue</h3>
-      <div id="catalogueList" class="list"></div>
-      <div class="row">
-        <label class="drop sm">
-          <input id="catalogFiles" type="file" multiple />
-          <span>Upload to Catalogue</span>
-        </label>
+
+      <div class="equipment-section">
+        <h3>Equipment Catalogue</h3>
+        <div class="catalogue-list" id="catalogueList">
+          <div class="loading">Loading catalogue...</div>
+        </div>
+        
+        <div class="catalogue-upload">
+          <div class="file-drop small" id="catalogDrop">
+            <input type="file" id="catalogFiles" multiple accept=".pdf,.doc,.docx,.txt,.csv" />
+            <div class="drop-content">
+              <span class="drop-text">Upload to Catalogue</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="card">
+    <!-- Queue Section -->
+    <section class="panel queue">
       <h2>In Queue</h2>
-      <div id="queueList" class="list empty">Nothing queued</div>
+      <div class="queue-list" id="queueList">
+        <div class="empty-state">Nothing queued</div>
+      </div>
     </section>
 
-    <section class="card">
+    <!-- Past Generations Section -->
+    <section class="panel past">
       <h2>Past Generations</h2>
-      <div id="pastList" class="list empty">No BOMs yet</div>
+      <div class="past-list" id="pastList">
+        <div class="loading">Loading past generations...</div>
+      </div>
     </section>
   </main>
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p id="loadingText">Processing...</p>
+  </div>
+
+  <!-- Toast notifications -->
+  <div class="toast-container" id="toastContainer"></div>
 
   <script src="src/app.js"></script>
 </body>
 </html>
-
