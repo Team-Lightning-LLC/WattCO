@@ -1,1 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Spec-to-BOM · Doculabs</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <header class="header">
+    <h1>Spec-to-BOM</h1><span class="sub">By Doculabs</span>
+  </header>
+
+  <main class="grid">
+    <section class="card span-2">
+      <h2>Generator</h2>
+      <div class="row">
+        <label class="drop">
+          <input id="specFiles" type="file" multiple />
+          <span>Drop specs or click to upload</span>
+        </label>
+        <button id="startBtn">Start</button>
+      </div>
+      <h3>Equipment Catalogue</h3>
+      <div id="catalogueList" class="list"></div>
+      <div class="row">
+        <label class="drop sm">
+          <input id="catalogFiles" type="file" multiple />
+          <span>Upload to Catalogue</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>In Queue</h2>
+      <div id="queueList" class="list empty">Nothing queued</div>
+    </section>
+
+    <section class="card">
+      <h2>Past Generations</h2>
+      <div id="pastList" class="list empty">No BOMs yet</div>
+    </section>
+  </main>
+
+  <script src="src/app.js"></script>
+</body>
+</html>
 
