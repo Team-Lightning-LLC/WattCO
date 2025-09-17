@@ -1,7 +1,10 @@
 {
-  "functions": { "api/**/*.js": { "runtime": "nodejs20.x" } },
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs20"
+    }
+  },
   "env": {
     "VERTESIA_API_BASE": "https://api.vertesia.io/api/v1"
   }
 }
-
