@@ -1,8 +1,7 @@
-// Direct Vertesia API integration with your specifications
+// Direct Vertesia API integration
 const VERTESIA_API_BASE = 'https://api.vertesia.io/api/v1';
 const VERTESIA_API_KEY = 'sk-fd362b66caf5be947b7dfd601ac60fbb';
 const ENVIRONMENT_ID = '681915c6a01fb262a410c161';
-const MODEL = 'publishers/anthropic/models/claude-sonnet-4';
 
 // DOM Elements
 const elements = {
@@ -25,12 +24,12 @@ let state = {
   selectedSpecs: [],
   isProcessing: false,
   queueTimer: null,
-  allObjects: [] // Store all objects loaded from API
+  allObjects: []
 };
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log('🚀 Initializing Spec-to-BOM application...');
+  console.log('Initializing Spec-to-BOM application...');
   
   try {
     setupEventListeners();
@@ -38,12 +37,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     startQueueMonitoring();
     showToast('Application loaded successfully', 'success');
   } catch (error) {
-    console.error('❌ Initialization failed:', error);
+    console.error('Initialization failed:', error);
     showToast('Failed to initialize application', 'error');
   }
 });
 
-// Load ALL objects from Vertesia (your proven approach)
+// Load ALL objects from Vertesia
 async function loadAllObjectsFromVertesia() {
   showLoading('Loading all objects from database...');
   
@@ -61,14 +60,13 @@ async function loadAllObjectsFromVertesia() {
     }
 
     state.allObjects = await response.json();
-    console.log(`📦 Loaded ${state.allObjects.length} total objects`);
+    console.log(`Loaded ${state.allObjects.length} total objects`);
     
-    // Now filter and render the different categories
     renderCatalogueItems();
     renderPastGenerations();
     
   } catch (error) {
-    console.error('❌ Failed to load objects:', error);
+    console.error('Failed to load objects:', error);
     showToast('Failed to load data from database', 'error');
   } finally {
     hideLoading();
@@ -81,7 +79,7 @@ function renderCatalogueItems() {
     obj.name && obj.name.includes('Equipment_Catalogue')
   );
   
-  console.log(`🔧 Found ${catalogueItems.length} catalogue items`);
+  console.log(`Found ${catalogueItems.length} catalogue items`);
   
   const container = elements.catalogueList;
   
@@ -93,13 +91,14 @@ function renderCatalogueItems() {
   container.innerHTML = catalogueItems.map(item => createListItem(item, 'catalog')).join('');
 }
 
-// Filter and render past BOM generations (clientname_BOM)
+// Filter and render past BOM generations (includes _BOM)
 function renderPastGenerations() {
   const bomItems = state.allObjects.filter(obj => 
-    obj.name && obj.name.endsWith('_BOM')
+    obj.name && obj.name.includes('_BOM')
   );
   
-  console.log(`📋 Found ${bomItems.length} BOM generations`);
+  console.log(`Found ${bomItems.length} BOM generations`);
+  console.log('BOM items:', bomItems.map(item => item.name));
   
   const container = elements.pastList;
   
@@ -108,7 +107,6 @@ function renderPastGenerations() {
     return;
   }
 
-  // Sort by creation date (newest first)
   bomItems.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   
   container.innerHTML = bomItems.map(item => createListItem(item, 'bom')).join('');
@@ -133,7 +131,7 @@ async function vertesiaCall(endpoint, options = {}) {
 
     return await response.json();
   } catch (error) {
-    console.error(`❌ Vertesia API call failed for ${endpoint}:`, error);
+    console.error(`Vertesia API call failed for ${endpoint}:`, error);
     throw error;
   }
 }
@@ -143,10 +141,8 @@ async function uploadFileToVertesia(file, namePrefix = '') {
   try {
     showLoading('Getting upload URL...');
     
-    // Create filename with prefix if provided
     const fileName = namePrefix ? `${namePrefix}_${file.name}` : file.name;
     
-    // Step 1: Get signed upload URL
     const uploadResponse = await vertesiaCall('/objects/upload-url', {
       method: 'POST',
       body: JSON.stringify({
@@ -157,7 +153,6 @@ async function uploadFileToVertesia(file, namePrefix = '') {
 
     showLoading('Uploading file...');
 
-    // Step 2: Upload file to storage
     const uploadResult = await fetch(uploadResponse.url, {
       method: 'PUT',
       body: file
@@ -169,7 +164,6 @@ async function uploadFileToVertesia(file, namePrefix = '') {
 
     showLoading('Creating object record...');
 
-    // Step 3: Create object record
     const objectResponse = await vertesiaCall('/objects', {
       method: 'POST',
       body: JSON.stringify({
@@ -189,7 +183,7 @@ async function uploadFileToVertesia(file, namePrefix = '') {
 
     return objectResponse;
   } catch (error) {
-    console.error('❌ File upload failed:', error);
+    console.error('File upload failed:', error);
     throw error;
   }
 }
@@ -204,7 +198,7 @@ function setupEventListeners() {
   
   elements.startBtn.addEventListener('click', handleStartGeneration);
   
-  console.log('✅ Event listeners setup complete');
+  console.log('Event listeners setup complete');
 }
 
 function setupDragAndDrop(dropZone, fileInput, changeHandler) {
@@ -234,7 +228,6 @@ function preventDefaults(e) {
   e.stopPropagation();
 }
 
-// File Handlers
 function handleSpecFilesSelected() {
   const files = Array.from(elements.specFiles.files);
   state.selectedSpecs = files;
@@ -263,7 +256,7 @@ function updateSpecDropUI(files) {
     dropText.textContent = `${files.length} file${files.length > 1 ? 's' : ''} selected`;
   } else {
     dropZone.classList.remove('has-files');
-    dropText.textContent = 'Drop specs or click to upload';
+    dropText.textContent = 'Upload';
   }
 }
 
@@ -271,10 +264,9 @@ function updateStartButton() {
   elements.startBtn.disabled = state.selectedSpecs.length === 0 || state.isProcessing;
 }
 
-// Create list item for rendering
 function createListItem(item, type) {
   const date = item.created_at ? new Date(item.created_at).toLocaleDateString() : '';
-  const typeLabel = type === 'bom' ? 'BOM' : type === 'catalog' ? 'Catalog' : '';
+  const typeLabel = type === 'bom' ? 'BOM' : type === 'catalog' ? 'CATALOG' : '';
   
   return `
     <div class="list-item">
@@ -286,15 +278,14 @@ function createListItem(item, type) {
         </div>
       </div>
       <div class="item-actions">
-        <button class="btn-secondary" onclick="viewItem('${item.id}')">View</button>
-        <button class="btn-secondary" onclick="downloadItem('${item.id}')">Download</button>
-        <button class="btn-secondary" onclick="deleteItem('${item.id}')">Delete</button>
+        <button class="btn-secondary" onclick="viewItem('${item.id}')">view</button>
+        <button class="btn-secondary" onclick="downloadItem('${item.id}')">download</button>
+        <button class="btn-secondary" onclick="deleteItem('${item.id}')">delete</button>
       </div>
     </div>
   `;
 }
 
-// Queue rendering
 function renderQueue() {
   const container = elements.queueList;
   
@@ -310,7 +301,7 @@ function renderQueue() {
         <div class="item-info">
           <div class="item-name">${info.name}</div>
           <div class="item-meta">
-            <span class="status-badge processing">Processing</span>
+            <span class="status-badge processing">PROCESSING</span>
             <span>${elapsed}m elapsed</span>
           </div>
         </div>
@@ -321,53 +312,53 @@ function renderQueue() {
   container.innerHTML = queueItems;
 }
 
-// Main generation handler
+// Generate BOM using direct interaction (your exact pattern)
 async function handleStartGeneration() {
-  if (state.selectedSpecs.length === 0) return;
-  
   state.isProcessing = true;
   updateStartButton();
-  showLoading('Starting BOM generation...');
+  showLoading('Generating BOM...');
 
   try {
-    for (const file of state.selectedSpecs) {
-      // Upload spec file (no special naming needed)
-      const specObject = await uploadFileToVertesia(file);
-      
-      // Start async generation using AgentConfigurator
-      const jobResponse = await vertesiaCall('/execute/async', {
-        method: 'POST',
-        body: JSON.stringify({
-          type: 'conversation',
-          interaction: 'AgentConfigurator',
-          data: {
-            file: specObject.content.source,
-            task: `Generate BOM configuration for ${file.name}`
-          },
-          config: {
-            environment: ENVIRONMENT_ID,
-            model: MODEL
-          }
-        })
-      });
+    const response = await fetch('https://api.vertesia.io/api/v1/execute/async', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${VERTESIA_API_KEY}`
+      },
+      body: JSON.stringify({
+        type: 'conversation',
+        interaction: 'AgentConfigurator',
+        data: {
+          Task: 'For the uploaded document, generate a Bill of Materials'
+        },
+        config: {
+          environment: ENVIRONMENT_ID,
+          model: 'publishers/anthropic/models/claude-3-7-sonnet'
+        }
+      })
+    });
 
-      // Add to queue
-      state.queue.set(jobResponse.id || Date.now(), {
-        name: file.name,
-        startTime: Date.now()
-      });
+    if (!response.ok) {
+      throw new Error(`Generation failed: ${response.status}`);
     }
 
-    // Reset UI
+    const result = await response.json();
+    
+    state.queue.set(result.id || Date.now(), {
+      name: 'BOM Generation',
+      startTime: Date.now()
+    });
+
     state.selectedSpecs = [];
     elements.specFiles.value = '';
     updateSpecDropUI([]);
     renderQueue();
     
-    showToast(`Started generation for ${state.queue.size} file${state.queue.size > 1 ? 's' : ''}`, 'success');
+    showToast('BOM generation started successfully', 'success');
+    
   } catch (error) {
-    console.error('❌ Generation failed:', error);
-    showToast('Failed to start generation', 'error');
+    console.error('Generation failed:', error);
+    alert('Failed to generate BOM');
   } finally {
     state.isProcessing = false;
     updateStartButton();
@@ -375,7 +366,6 @@ async function handleStartGeneration() {
   }
 }
 
-// Upload catalogue files with Equipment_Catalogue naming
 async function uploadCatalogFiles(files) {
   showLoading('Uploading to catalogue...');
   
@@ -385,10 +375,10 @@ async function uploadCatalogFiles(files) {
     }
     
     elements.catalogFiles.value = '';
-    await loadAllObjectsFromVertesia(); // Reload everything
+    await loadAllObjectsFromVertesia();
     showToast(`${files.length} file${files.length > 1 ? 's' : ''} uploaded to catalogue`, 'success');
   } catch (error) {
-    console.error('❌ Catalogue upload failed:', error);
+    console.error('Catalogue upload failed:', error);
     showToast('Failed to upload to catalogue', 'error');
   } finally {
     hideLoading();
@@ -408,7 +398,7 @@ window.viewItem = async function(id) {
     
     window.open(downloadUrl.url, '_blank');
   } catch (error) {
-    console.error('❌ Failed to view item:', error);
+    console.error('Failed to view item:', error);
     showToast('Failed to view item', 'error');
   } finally {
     hideLoading();
@@ -423,29 +413,25 @@ window.deleteItem = async function(id) {
   try {
     showLoading('Deleting item...');
     await vertesiaCall(`/objects/${id}`, { method: 'DELETE' });
-    await loadAllObjectsFromVertesia(); // Reload everything
+    await loadAllObjectsFromVertesia();
     showToast('Item deleted successfully', 'success');
   } catch (error) {
-    console.error('❌ Failed to delete item:', error);
+    console.error('Failed to delete item:', error);
     showToast('Failed to delete item', 'error');
   } finally {
     hideLoading();
   }
 };
 
-// Queue Monitoring
 function startQueueMonitoring() {
   state.queueTimer = setInterval(async () => {
     if (state.queue.size > 0) {
       renderQueue();
-      
-      // Check for completed jobs by reloading all objects
       await loadAllObjectsFromVertesia();
     }
-  }, 10000); // Check every 10 seconds
+  }, 10000);
 }
 
-// UI Helpers
 function showLoading(message) {
   elements.loadingText.textContent = message;
   elements.loadingOverlay.classList.add('show');
@@ -467,4 +453,4 @@ function showToast(message, type = 'success') {
   }, 5000);
 }
 
-console.log('✅ Spec-to-BOM application ready');
+console.log('Spec-to-BOM application ready');
